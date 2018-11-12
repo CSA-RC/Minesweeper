@@ -21,17 +21,18 @@ class Minebutton:
 
     def __init__ (self, root):
         self.button_dict = dict()
-        mines = 15
+        mines = 25
+        size = 15
         self.minecount = mines
         self.mlist = []
         self.mines = []
 
-        for x in range(0, 10):
-            for y in range(0,10):
+        for x in range(0, size):
+            for y in range(0, size):
                 self.mlist.append([x, y])
 
-        for x in range(0, 10):
-            for y in range(0, 10):
+        for x in range(0, size):
+            for y in range(0, size):
                 self.button_dict[f"{x}, {y}"] = MinesweeperButton(text="", height=1, width=2)
                 self.button_dict[f"{x}, {y}"].bind("<ButtonPress-1>", self.minesweeperclick)
                 self.button_dict[f"{x}, {y}"].bind("<ButtonRelease-3>", self.flag)
@@ -40,11 +41,15 @@ class Minebutton:
         for x in range(0, mines):
             self.minegenerate()
 
+        self.buttonlabel=Label(text=("Mines Remaining: %s" % self.minecount))
+        self.buttonlabel.grid(columnspan=10, column=1, row=999, sticky="ew")
+
     def minegenerate(self):
         x, y = random.choice(self.mlist)
         self.mines.append(self.button_dict[f"{x}, {y}"])
         self.button_dict[f"{x}, {y}"].unbind("<ButtonPress-1>")
         self.button_dict[f"{x}, {y}"].bind("<ButtonPress-1>", self.boom)
+        self.button_dict[f"{x}, {y}"].config(text="m")
         self.mlist.remove([x, y])
 
     def boom(self, event):
@@ -78,11 +83,25 @@ class Minebutton:
                 button.config(state="disabled", text="flag")
                 if button in self.mines:
                     self.minecount -= 1
+                    self.buttonlabel.config(text=("Mines Remaining: %s" % self.minecount))
                     if self.minecount == 0:
-                        print("you win")
+                        self.winscreen()
+                        break
                 button.unbind("<ButtonPress-1>")
                 button.unbind("<ButtonRelease-3>")
                 button.bind("<ButtonRelease-3>", self.unflag)
+
+    def winscreen(self):
+        win = Toplevel()
+        win.geometry('50x50')
+        win.title("Minesweeper")
+        msg = Message(win, text="You Win!")
+        msg.pack()
+        closebutton = Button(win, text="Close", command = self.close)
+        closebutton.pack()
+
+    def close(self):
+        root.destroy()
 
 
     def unflag(self, event):
@@ -127,18 +146,39 @@ class Minebutton:
                 try:
                     if self.button_dict[f"{str(int(x)-1)}, {str(int(y)+1)}"] in self.mines:
                         adjacentmines += 1
+                except KeyError:
+                    pass
+                try:
                     if self.button_dict[f"{str(int(x)-1)}, {y}"] in self.mines:
                         adjacentmines += 1
+                except KeyError:
+                    pass
+                try:
                     if self.button_dict[f"{str(int(x)-1)}, {str(int(y)-1)}"] in self.mines:
                         adjacentmines += 1
+                except KeyError:
+                    pass
+                try:
                     if self.button_dict[f"{x}, {str(int(y)-1)}"] in self.mines:
                         adjacentmines += 1
+                except KeyError:
+                    pass
+                try:
                     if self.button_dict[f"{x}, {str(int(y)+1)}"] in self.mines:
                         adjacentmines += 1
+                except KeyError:
+                    pass
+                try:
                     if self.button_dict[f"{str(int(x)+1)}, {str(int(y)+1)}"] in self.mines:
                         adjacentmines += 1
+                except KeyError:
+                    pass
+                try:
                     if self.button_dict[f"{str(int(x)+1)}, {y}"] in self.mines:
                         adjacentmines += 1
+                except KeyError:
+                    pass
+                try:
                     if self.button_dict[f"{str(int(x)+1)}, {str(int(y)-1)}"] in self.mines:
                         adjacentmines += 1
                 except KeyError:
@@ -147,28 +187,52 @@ class Minebutton:
                     button.config(relief="sunken", text="", state="disabled")
                     self.blankspacecalculate(button)
                 else:
-                    button.config(relief="sunken" ,text=adjacentmines, state="disabled")
+                    button.config(relief="sunken", text=adjacentmines, state="disabled")
 
     def blankspacecalculate(self, button):
         for list in self.button_dict.items():
             if button in list:
                 x, y = list[0].split(", ")
-                if button.cget("state") == "disabled":
-                    try:
+                try:
+                    if self.button_dict[f"{int(x)-1}, {int(y)+1}"].cget("relief") == "raised":
                         self.numbertest(self.button_dict[f"{int(x)-1}, {int(y)+1}"])
+                except KeyError:
+                    pass
+                try:
+                    if self.button_dict[f"{int(x)-1}, {y}"].cget("relief") == "raised":
                         self.numbertest(self.button_dict[f"{int(x)-1}, {y}"])
+                except KeyError:
+                    pass
+                try:
+                    if self.button_dict[f"{int(x)-1}, {int(y)-1}"].cget("relief") == "raised":
                         self.numbertest(self.button_dict[f"{int(x)-1}, {int(y)-1}"])
+                except KeyError:
+                    pass
+                try:
+                    if self.button_dict[f"{x}, {str(int(y)+1)}"].cget("relief") == "raised":
                         self.numbertest(self.button_dict[f"{x}, {str(int(y)+1)}"])
+                except KeyError:
+                    pass
+                try:
+                    if self.button_dict[f"{x}, {str(int(y)-1)}"].cget("relief") == "raised":
                         self.numbertest(self.button_dict[f"{x}, {str(int(y)-1)}"])
+                except KeyError:
+                    pass
+                try:
+                    if self.button_dict[f"{str(int(x)+1)}, {str(int(y)+1)}"].cget("relief") == "raised":
                         self.numbertest(self.button_dict[f"{str(int(x)+1)}, {str(int(y)+1)}"])
+                except KeyError:
+                    pass
+                try:
+                    if self.button_dict[f"{str(int(x)+1)}, {y}"].cget("relief") == "raised":
                         self.numbertest(self.button_dict[f"{str(int(x)+1)}, {y}"])
+                except KeyError:
+                    pass
+                try:
+                    if self.button_dict[f"{str(int(x)+1)}, {str(int(y)-1)}"].cget("relief") == "raised":
                         self.numbertest(self.button_dict[f"{str(int(x)+1)}, {str(int(y)-1)}"])
-                    except KeyError:
-                        pass
-
-
-    def minetest(self, button):
-        button.config(text="click")
+                except KeyError:
+                    pass
 
 
 Minebutton(root)
